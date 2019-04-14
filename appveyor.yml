@@ -1,0 +1,21 @@
+version: 1.0.{build}.mingw64
+branches:
+  only:
+  - master
+skip_tags: true
+image: Visual Studio 2017
+init:
+- ps: $blockRdp = $false; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+clone_script:
+- cmd: git clone --recursive https://github.com/cwyyprog/bitshares-fc.git
+build_script:
+- cmd: >-
+    set MSYSTEM=MINGW64
+
+    cd %APPVEYOR_BUILD_FOLDER%
+    
+    c:\msys64\usr\bin\bash -lc "pacman --noconfirm  -Syu"
+
+    C:\msys64\usr\bin\bash -lc $APPVEYOR_BUILD_FOLDER/bitshares-fc/appveyor.bash
+test: off
+deploy: off
