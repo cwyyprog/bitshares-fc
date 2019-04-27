@@ -133,7 +133,7 @@ else ( MSVC )
 endif ( MSVC )
 # End configure editline
 
-IF( WIN32 )
+IF( MSVC )
   MESSAGE(STATUS "Configuring fc to build on Win32")
 
   set( RPCRT4 rpcrt4 )
@@ -156,7 +156,7 @@ IF( WIN32 )
   set( PLATFORM_SPECIFIC_LIBS wsock32.lib ws2_32.lib userenv.lib)
   # iphlpapi.lib
 
-ELSE(WIN32)
+ELSE(MSVC)
   MESSAGE(STATUS "Configuring fc to build on Unix/Apple")
 
   LIST(APPEND BOOST_COMPONENTS coroutine)
@@ -170,7 +170,7 @@ ELSE(WIN32)
     SET(rt_library rt )
     SET(pthread_library pthread)
   ENDIF(NOT APPLE)
-ENDIF(WIN32)
+ENDIF(MSVC)
 
 
 
@@ -396,7 +396,7 @@ include_directories( vendor/websocketpp )
 
 add_subdirectory(tests)
 
-if(WIN32)
+if(MSVC)
    # add addtional import library on windows platform
    target_link_libraries( fc PUBLIC crypt32.lib)
 
@@ -476,7 +476,7 @@ if(WIN32)
    set_property(TARGET fc PROPERTY SHARED_LIBRARIES_DEBUG ${SHARED_LIBRARIES_DEBUG})
    set_property(TARGET fc PROPERTY SHARED_LIBRARIES_RELEASE ${SHARED_LIBRARIES_RELEASE})
 
-endif(WIN32)
+endif(MSVC)
 
 SET(OPENSSL_CONF_TARGET )
 IF(DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
