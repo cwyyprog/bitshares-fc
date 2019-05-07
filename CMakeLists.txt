@@ -133,7 +133,7 @@ else ( MSVC )
 endif ( MSVC )
 # End configure editline
 
-IF( MSVC )
+IF( WIN32 )
   MESSAGE(STATUS "Configuring fc to build on Win32")
 
   set( RPCRT4 rpcrt4 )
@@ -156,7 +156,7 @@ IF( MSVC )
   set( PLATFORM_SPECIFIC_LIBS wsock32.lib ws2_32.lib userenv.lib)
   # iphlpapi.lib
 
-ELSE(MSVC)
+ELSE(WIN32)
   MESSAGE(STATUS "Configuring fc to build on Unix/Apple")
 
   LIST(APPEND BOOST_COMPONENTS coroutine)
@@ -170,7 +170,7 @@ ELSE(MSVC)
     SET(rt_library rt )
     SET(pthread_library pthread)
   ENDIF(NOT APPLE)
-ENDIF(MSVC)
+ENDIF(WIN32)
 
 
 

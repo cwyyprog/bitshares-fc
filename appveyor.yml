@@ -14,9 +14,9 @@ build_script:
 
     cd %APPVEYOR_BUILD_FOLDER%
     
-    c:\msys64\usr\bin\bash -lc "pacman --noconfirm  -Syu"
+    rem c:\msys64\usr\bin\bash -lc "pacman --noconfirm  -Syu"
     
-    c:\msys64\usr\bin\bash -lc "pacman --noconfirm  -Syu"
+    rem c:\msys64\usr\bin\bash -lc "pacman --noconfirm  -Syu"
 
     C:\msys64\usr\bin\bash -lc $APPVEYOR_BUILD_FOLDER/bitshares-fc/appveyor.bash
 test: off
