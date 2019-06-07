@@ -33,7 +33,9 @@ namespace fc {
       template<typename R, typename Arg0, typename ... Args>
       std::function<R(Args...)> bind_first_arg( const std::function<R(Arg0,Args...)>& f, Arg0 a0 )
       {
-         return [=]( Args... args ) { return f( a0, args... ); };
+         // Capture a0 this way because of a {compiler,fc,???} bug that causes optional<bool>() to be incorrectly
+         // captured as optional<bool>(false).
+         return [f, a0 = std::decay_t<Arg0>(a0)]( Args... args ) { return f( a0, args... ); };
       }
       template<typename R>
       R call_generic( const std::function<R()>& f, variants::const_iterator a0, variants::const_iterator e, uint32_t max_depth = 1 )
@@ -44,9 +46,11 @@ namespace fc {
       template<typename R, typename Arg0, typename ... Args>
       R call_generic( const std::function<R(Arg0,Args...)>& f, variants::const_iterator a0, variants::const_iterator e, uint32_t max_depth )
       {
-         FC_ASSERT( a0 != e );
+         bool optional_args = all_optionals<std::decay_t<Arg0>, std::decay_t<Args>...>::value;
+         FC_ASSERT( a0 != e || optional_args );
          FC_ASSERT( max_depth > 0, "Recursion depth exceeded!" );
-         return call_generic<R,Args...>( bind_first_arg<R,Arg0,Args...>( f, a0->as< typename std::decay<Arg0>::type >( max_depth - 1 ) ), a0+1, e, max_depth - 1 );
+         auto arg = (a0 == e)? std::decay_t<Arg0>() : a0->as<std::decay_t<Arg0>>(max_depth - 1);
+         return call_generic<R,Args...>( bind_first_arg<R,Arg0,Args...>( f, arg ), a0+1, e, max_depth - 1 );
       }
 
       template<typename R, typename ... Args>
@@ -108,13 +112,17 @@ namespace fc {
          variant call( const string& name, const variants& args )
          {
             auto itr = _by_name.find(name);
-            FC_ASSERT( itr != _by_name.end(), "no method with name '${name}'", ("name",name)("api",_by_name) );
+            if( itr == _by_name.end() )
+               FC_THROW_EXCEPTION( method_not_found_exception, "No method with name '${name}'",
+                                   ("name",name)("api",_by_name) );
             return call( itr->second, args );
          }
 
          variant call( uint32_t method_id, const variants& args )
          {
-            FC_ASSERT( method_id < _methods.size() );
+            if( method_id >= _methods.size() )
+               FC_THROW_EXCEPTION( method_not_found_exception, "No method with id '${id}'",
+                                   ("id",method_id)("api",_by_name) );
             return _methods[method_id](args);
          }
 
@@ -137,7 +145,9 @@ namespace fc {
          template<typename R, typename Arg0, typename ... Args>
          std::function<R(Args...)> bind_first_arg( const std::function<R(Arg0,Args...)>& f, Arg0 a0 )const
          {
-            return [=]( Args... args ) { return f( a0, args... ); };
+            // Capture a0 this way because of a {compiler,fc,???} bug that causes optional<bool>() to be incorrectly
+            // captured as optional<bool>(false).
+            return [f, a0 = std::decay_t<Arg0>(a0)]( Args... args ) { return f( a0, args... ); };
          }
 
          template<typename R>
@@ -172,9 +182,11 @@ namespace fc {
          template<typename R, typename Arg0, typename ... Args>
          R call_generic( const std::function<R(Arg0,Args...)>& f, variants::const_iterator a0, variants::const_iterator e, uint32_t max_depth )
          {
-            FC_ASSERT( a0 != e, "too few arguments passed to method" );
+            bool optional_args = detail::all_optionals<std::decay_t<Arg0>, std::decay_t<Args>...>::value;
+            FC_ASSERT( a0 != e || optional_args, "too few arguments passed to method" );
             FC_ASSERT( max_depth > 0, "Recursion depth exceeded!" );
-            return  call_generic<R,Args...>( this->bind_first_arg<R,Arg0,Args...>( f, a0->as< typename std::decay<Arg0>::type >( max_depth - 1 ) ), a0+1, e, max_depth - 1 );
+            auto arg = (a0 == e)? std::decay_t<Arg0>() : a0->as<std::decay_t<Arg0>>(max_depth - 1);
+            return  call_generic<R,Args...>( this->bind_first_arg<R,Arg0,Args...>( f, arg ), a0+1, e, max_depth - 1 );
          }
 
          struct api_visitor
