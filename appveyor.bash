@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 set -e
 export MSYSTEM=MINGW64
-wget http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-boost-1.60.0-4-any.pkg.tar.xz
-pacman --noconfirm -U mingw-w64-x86_64-boost-1.60.0-4-any.pkg.tar.xz
+wget http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-boost-1.69.0-2-any.pkg.tar.xz
+pacman --noconfirm -U mingw-w64-x86_64-boost-1.69.0-2-any.pkg.tar.xz
 pacman --noconfirm -S mingw-w64-x86_64-ccache
 #pacman --noconfirm -S  mingw-w64-x86_64-boost; #mingw-w64-x86_64-openssl
 mkdir /msys64
